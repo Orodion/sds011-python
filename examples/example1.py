@@ -10,7 +10,7 @@ def run() -> None:
     """Simple example to read, decode and print data from SDS011 sensor."""
     try:
         ser = serial.Serial('COM4', 9600)
-        ser.flushInput()
+        ser.reset_input_buffer()
         sensor = SDS011(ser)
         print('Connected to SDS011 with id: ' + sensor.get_device_id())
         sensor.print_firmware()

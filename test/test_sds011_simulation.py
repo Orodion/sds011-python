@@ -91,7 +91,8 @@ class TestSDS011Simulation(unittest.TestCase):
 
     def __check_reply_id_reply_valid(self):
         """ Check command id is id from simulated device and reply is valid """
-        self.assertEqual(self.sensor.last_reply[-4:-2], bytes(self.sensor_simulation.device_id))
+        self.assertEqual(self.sensor.last_reply[-4:-2],
+                         bytes(self.sensor_simulation.device_id))
         self.assertTrue(self.sensor.reply_message_valid())
 
     def __check_working_mode_command(self):
@@ -102,7 +103,8 @@ class TestSDS011Simulation(unittest.TestCase):
     def __check_working_mode_reply(self):
         """ Check working mode reply """
         self.assertEqual(self.sensor.last_reply[2], Command.WORKING_MODE.value)
-        self.assertEqual(self.sensor.last_reply[4], self.sensor_simulation.working_mode.value)
+        self.assertEqual(self.sensor.last_reply[4],
+                         self.sensor_simulation.working_mode.value)
         self.__check_reply_id_reply_valid()
 
     def test_working_mode(self):
@@ -110,7 +112,8 @@ class TestSDS011Simulation(unittest.TestCase):
         # Set Sleep Mode
         self.sensor.set_working_mode(WorkingMode.SLEEP_MODE)
         self.__check_working_mode_command()
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.working_mode.value)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.working_mode.value)
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
         self.__check_working_mode_reply()
@@ -126,7 +129,8 @@ class TestSDS011Simulation(unittest.TestCase):
 
         # Set Work Mode
         self.sensor.set_working_mode(WorkingMode.WORK_MODE)
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.working_mode.value)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.working_mode.value)
         self.__check_working_mode_command()
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
@@ -149,7 +153,8 @@ class TestSDS011Simulation(unittest.TestCase):
     def __check_report_mode_reply(self):
         """ Check report mode reply """
         self.assertEqual(self.sensor.last_reply[2], Command.REPORT_MODE.value)
-        self.assertEqual(self.sensor.last_reply[4], self.sensor_simulation.report_mode.value)
+        self.assertEqual(self.sensor.last_reply[4],
+                         self.sensor_simulation.report_mode.value)
         self.__check_reply_id_reply_valid()
 
     def test_report_mode(self):
@@ -157,7 +162,8 @@ class TestSDS011Simulation(unittest.TestCase):
         # Set Report Mode Active
         self.sensor.set_report_mode(ReportMode.REPORT_ACTIVE_MODE)
         self.__check_report_mode_command()
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.report_mode.value)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.report_mode.value)
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
         self.__check_report_mode_reply()
@@ -173,7 +179,8 @@ class TestSDS011Simulation(unittest.TestCase):
 
         # Set Report Mode Query
         self.sensor.set_report_mode(ReportMode.REPORT_QUERY_MODE)
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.report_mode.value)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.report_mode.value)
         self.__check_report_mode_command()
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
@@ -205,7 +212,8 @@ class TestSDS011Simulation(unittest.TestCase):
     def __check_working_period_reply(self):
         """ Check working period reply"""
         self.assertEqual(self.sensor.last_reply[2], Command.WORKING_PERIOD.value)
-        self.assertEqual(self.sensor.last_reply[4], self.sensor_simulation.working_period)
+        self.assertEqual(self.sensor.last_reply[4],
+                         self.sensor_simulation.working_period)
         self.__check_reply_id_reply_valid()
 
     def test_woring_period(self):
@@ -213,7 +221,8 @@ class TestSDS011Simulation(unittest.TestCase):
         # Set Working Period 0 (continuous)
         self.sensor.set_working_period(0)
         self.__check_working_period_command()
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.working_period)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.working_period)
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
         self.__check_working_period_reply()
@@ -227,9 +236,11 @@ class TestSDS011Simulation(unittest.TestCase):
         self.__check_working_period_reply()
         self.assertEqual(self.sensor.last_reply[3], Modifier.GET.value)
 
-        # # Set Working Period 1-30 minutes (periodic) work 30 seconds and sleep n*60-30 seconds
+        # Set Working Period 1-30 minutes (periodic):
+        # work 30 seconds and sleep n*60-30 seconds
         self.sensor.set_working_period(5)
-        self.assertEqual(self.sensor.last_command[4], self.sensor_simulation.working_period)
+        self.assertEqual(self.sensor.last_command[4],
+                         self.sensor_simulation.working_period)
         self.__check_working_period_command()
         self.assertEqual(self.sensor.last_command[3], Modifier.SET.value)
 
@@ -272,8 +283,10 @@ class TestSDS011Simulation(unittest.TestCase):
 
         # Check get firmware reply
         self.assertEqual(self.sensor.last_reply[2], Command.GET_FIRMWARE.value)
-        self.assertEqual(self.sensor.last_reply[3:6], bytes(self.sensor_simulation.firmware))
-        self.assertEqual(self.sensor.last_reply[-4:-2], bytes(self.sensor_simulation.device_id))
+        self.assertEqual(self.sensor.last_reply[3:6],
+                         bytes(self.sensor_simulation.firmware))
+        self.assertEqual(self.sensor.last_reply[-4:-2],
+                         bytes(self.sensor_simulation.device_id))
         self.assertTrue(self.sensor.reply_message_valid())
 
         self.sensor.print_firmware()

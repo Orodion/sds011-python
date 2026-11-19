@@ -2,7 +2,7 @@
 
 """ Class for control the SDS011 sensor. """
 
-from typing import List
+from typing import List, Optional
 from .definitions import WorkingMode
 from .definitions import ReportMode
 from .definitions import Modifier
@@ -119,7 +119,7 @@ class SDS011:
         return str(bytes(self.device_id).hex()).upper()
 
     def __prepare_command(self, command: Command, data: List[int],
-                          device_id: List[int] = None) -> None:
+                          device_id: Optional[List[int]] = None) -> None:
         """ Build command for device control """
         assert len(data) <= 12
         if not device_id:
@@ -159,29 +159,29 @@ class SDS011:
             self.__polling_for_reply()
 
     def set_report_mode(self, report_mode: ReportMode,
-                        device_id: List[int] = None) -> None:
+                        device_id: Optional[List[int]] = None) -> None:
         """ Set report mode """
         self.__prepare_command(command=Command.REPORT_MODE,
                                data=[Modifier.SET.value, report_mode.value],
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def get_report_mode(self, device_id: List[int] = None):
+    def get_report_mode(self, device_id: Optional[List[int]] = None):
         """ Get report mode """
         self.__prepare_command(command=Command.REPORT_MODE,
                                data=[Modifier.GET.value],
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def query_data(self, device_id: List[int] = None):
+    def query_data(self, device_id: Optional[List[int]] = None):
         """ Query data from device """
         self.__prepare_command(command=Command.QUERY_DATA,
                                data=[0],
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def set_device_id(self, new_device_id: [int, int],
-                      device_id: List[int] = None) -> None:
+    def set_device_id(self, new_device_id: List[int],
+                      device_id: Optional[List[int]] = None) -> None:
         """ Set device id """
         data = [0]*10 + new_device_id
         self.__prepare_command(command=Command.SET_DEVICE_ID,
@@ -191,21 +191,21 @@ class SDS011:
         self.__decode_device_id()
 
     def set_working_mode(self, working_mode: WorkingMode,
-                         device_id: List[int] = None) -> None:
+                         device_id: Optional[List[int]] = None) -> None:
         """ Set working mode """
         self.__prepare_command(command=Command.WORKING_MODE,
                                data=[Modifier.SET.value, working_mode.value],
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def get_working_mode(self, device_id: List[int] = None) -> None:
+    def get_working_mode(self, device_id: Optional[List[int]] = None) -> None:
         """ Get working mode """
         self.__prepare_command(command=Command.WORKING_MODE,
                                data=[Modifier.GET.value],
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def get_firmware_version(self, device_id: List[int] = None) -> None:
+    def get_firmware_version(self, device_id: Optional[List[int]] = None) -> None:
         """ Get firmware version and decode firmware and device id"""
         self.__prepare_command(command=Command.GET_FIRMWARE,
                                data=[0],
@@ -217,7 +217,7 @@ class SDS011:
         self.__decode_device_id()
 
     def set_working_period(self, working_period: int = 0,
-                           device_id: List[int] = None) -> None:
+                           device_id: Optional[List[int]] = None) -> None:
         """ Set working period """
         # valid values 1 min to 30 min and 0 for continuous
         # work 30 seconds and sleep n*60-30 seconds】
@@ -227,7 +227,7 @@ class SDS011:
                                device_id=device_id)
         self.__write_and_wait_reply()
 
-    def get_working_period(self, device_id: List[int] = None) -> None:
+    def get_working_period(self, device_id: Optional[List[int]] = None) -> None:
         """ Get working mode """
         self.__prepare_command(command=Command.WORKING_PERIOD,
                                data=[Modifier.GET.value],

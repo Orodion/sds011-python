@@ -63,8 +63,9 @@ class TestSDS011Simulation(unittest.TestCase):
 
         time.sleep(2)
 
-        # # Get Sleep Mode (Get Working Mode not working with my device, when in sleep mode.
-        #                   But it should work, like I understand the manual.)
+        # # Get Sleep Mode (Get Working Mode not working with my device when in
+        #                   sleep mode. But it should work, like I understand
+        #                   the manual.)
         # self.sensor.get_working_mode()
         # print(self.sensor.last_reply)
         # self.__check_working_mode_command()
@@ -193,7 +194,8 @@ class TestSDS011Simulation(unittest.TestCase):
 
         time.sleep(1)
 
-        # # Set Working Period 1-30 minutes (periodic) work 30 seconds and sleep n*60-30 seconds
+        # Set Working Period 1-30 minutes (periodic):
+        # work 30 seconds and sleep n*60-30 seconds
         working_period = 5
         self.sensor.set_working_period(working_period)
         self.__check_working_period_command()

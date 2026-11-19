@@ -3,6 +3,7 @@
 """ Simulation for serial connection with connected SDS011 sensor """
 
 from pathlib import Path
+from typing import List
 from ..definitions import WorkingMode, ReportMode, Modifier, Frame, Command, MessageType
 from ..sds011 import SDS011
 
@@ -37,7 +38,7 @@ class SimulationSDS011:
                 self.offset = 0
             read_buffer.append(self.data[self.offset])
             self.offset += 1
-        return read_buffer
+        return bytes(read_buffer)
 
     def flushInput(self) -> None:
         """ Dummy for function in serial.Serial().flushInput() """
@@ -67,34 +68,38 @@ class SimulationSDS011:
                         return True
         return False
 
+    def apply_command(self) -> List[int]:
+        """ Apply a settings command and return its reply payload bytes """
+        command_id, modifier, value = self.command[2], self.command[3], self.command[4]
+        is_set = modifier == Modifier.SET.value
+
+        if command_id == Command.WORKING_MODE.value:
+            if is_set:
+                self.working_mode = WorkingMode(value)
+            return [modifier, self.working_mode.value]
+
+        if command_id == Command.REPORT_MODE.value:
+            if is_set:
+                self.report_mode = ReportMode(value)
+            return [modifier, self.report_mode.value]
+
+        if command_id == Command.WORKING_PERIOD.value:
+            if is_set:
+                self.working_period = value
+                assert 0 <= self.working_period <= 30
+            return [modifier, self.working_period]
+
+        if command_id == Command.SET_DEVICE_ID.value:
+            self.device_id = [self.command[13], self.command[14]]
+            return [0, 0]
+
+        return []
+
     def build_reply(self) -> None:
         """ Build reply for received command """
         if self.command_message_valid():
-            data = [self.command[2]]
+            data = [self.command[2]] + self.apply_command()
             command_type = MessageType.COMMAND_REPLY
-
-            if self.command[2] == Command.WORKING_MODE.value:
-                if self.command[3] == Modifier.SET.value:
-                    self.working_mode = WorkingMode(self.command[4])
-                data.append(self.command[3])
-                data.append(self.working_mode.value)
-
-            if self.command[2] == Command.REPORT_MODE.value:
-                if self.command[3] == Modifier.SET.value:
-                    self.report_mode = ReportMode(self.command[4])
-                data.append(self.command[3])
-                data.append(self.report_mode.value)
-
-            if self.command[2] == Command.WORKING_PERIOD.value:
-                if self.command[3] == Modifier.SET.value:
-                    self.working_period = self.command[4]
-                    assert 0 <= self.working_period <= 30
-                data.append(self.command[3])
-                data.append(self.working_period)
-
-            if self.command[2] == Command.SET_DEVICE_ID.value:
-                data.extend([0, 0])
-                self.device_id = [self.command[13], self.command[14]]
 
             data.append(0)
 
