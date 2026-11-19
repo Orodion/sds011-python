@@ -10,6 +10,12 @@ from .definitions import Frame
 from .definitions import Command
 from .definitions import MessageType
 
+REPLY_LENGTH = 10
+# The sensor sends one 10 byte frame per second, so a header must show up
+# within a few frames unless the line is broken.
+MAX_HEADER_SEARCH_BYTES = 5 * REPLY_LENGTH
+MAX_REPLY_POLLS = 10
+
 
 class SDS011:
     """ Class for control the SDS011 sensor. """
@@ -26,12 +32,24 @@ class SDS011:
         self.get_firmware_version()
 
     def read_message(self):
-        """ Read message from serial interface """
-        header = 0
-        while header != bytes([Frame.HEADER.value]):
-            header = self.serial.read(size=1)
-        message_type = self.serial.read(size=1)
-        self.last_reply = header + message_type + self.serial.read(size=8)
+        """ Read message from serial interface
+
+        Raises TimeoutError if the serial read times out or no frame header
+        is found within MAX_HEADER_SEARCH_BYTES bytes.
+        """
+        header = bytes([Frame.HEADER.value])
+        for _ in range(MAX_HEADER_SEARCH_BYTES):
+            byte = bytes(self.serial.read(size=1))
+            if not byte:
+                raise TimeoutError('No data received from sensor!')
+            if byte == header:
+                break
+        else:
+            raise TimeoutError('No frame header received from sensor!')
+        body = bytes(self.serial.read(size=REPLY_LENGTH - 1))
+        if len(body) != REPLY_LENGTH - 1:
+            raise TimeoutError('Incomplete frame received from sensor!')
+        self.last_reply = header + body
 
     def command_message_valid(self) -> bool:
         """ Validate generated command """
@@ -68,7 +86,8 @@ class SDS011:
 
     def decode_data(self) -> None:
         """ Decode measured data from device if reply from device is valid """
-        if self.reply_message_valid():
+        if (self.reply_message_valid() and
+                self.last_reply[1] == MessageType.DATA.value):
             self.data['PM2.5'] = ((self.last_reply[3] << 8) + self.last_reply[2])/10
             self.data['PM10'] = ((self.last_reply[5] << 8) + self.last_reply[4])/10
 
@@ -116,14 +135,22 @@ class SDS011:
 
     def __polling_for_reply(self) -> None:
         """ Read messages from device until reply for the last command is received """
-        for _ in range(10):
+        for _ in range(MAX_REPLY_POLLS):
             self.read_message()
-            if (self.last_reply[2] == self.last_command[2] or
-                (self.last_command[2] == Command.QUERY_DATA.value and
-                 self.last_reply[1] == MessageType.DATA.value)):
+            if self.__is_reply_to_last_command():
                 break
         else:
             raise TimeoutError('No reply received from sensor!')
+
+    def __is_reply_to_last_command(self) -> bool:
+        """ Check that the last reply is valid and answers the last command """
+        if not self.reply_message_valid():
+            return False
+        command_id = self.last_command[2]
+        if command_id == Command.QUERY_DATA.value:
+            return self.last_reply[1] == MessageType.DATA.value
+        return (self.last_reply[1] == MessageType.COMMAND_REPLY.value and
+                self.last_reply[2] == command_id)
 
     def __write_and_wait_reply(self) -> None:
         """ Send command to device and wait for reply """
