@@ -3,4 +3,4 @@ flake8==7.5.0
 mypy==2.4.1
 pytest==9.2.0
 pytest-cov==7.1.0
-types-pyserial==3.5.0.20261104
+types-pyserial==3.5.0.20261122
